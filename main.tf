@@ -111,7 +111,7 @@ resource "aws_instance" "my_ec2" {
   provisioner "remote-exec" {
     inline = [
       "curl -o /home/ec2-user/install.sh https://raw.githubusercontent.com/REVATHIPENMETSA/Automation-CI-CD/main/install.sh",
-      "chmod +x /home/ec2-user/install.sh",
+      "sudo chmod +x /home/ec2-user/install.sh",
       "sudo /home/ec2-user/install.sh"
     ]
   }
