@@ -103,14 +103,14 @@ resource "aws_instance" "my_ec2" {
   # Download the Dockerfile from GitHub
   provisioner "remote-exec" {
     inline = [
-      "curl -o /home/ec2-user/Dockerfile https://github.com/REVATHIPENMETSA/Automation-CI-CD/blob/main/dockerfile",
+      "curl -o /home/ec2-user/Dockerfile https://raw.githubusercontent.com/REVATHIPENMETSA/Automation-CI-CD/main/dockerfile",
     ]
   }
 
   # Download the install.sh script from GitHub (if applicable)
   provisioner "remote-exec" {
     inline = [
-      "curl -o /home/ec2-user/install.sh https://github.com/REVATHIPENMETSA/Automation-CI-CD/blob/main/install.sh",
+      "curl -o /home/ec2-user/install.sh https://raw.githubusercontent.com/REVATHIPENMETSA/Automation-CI-CD/main/install.sh",
       "chmod +x /home/ec2-user/install.sh",
       "sudo /home/ec2-user/install.sh"
     ]
