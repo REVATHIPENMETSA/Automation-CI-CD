@@ -29,7 +29,7 @@ data "aws_subnet" "default" {
 }
 
 # Check if the "terraform" Security Group exists
-data "aws_security_group" "existing_terraform_sg" {
+data "aws_security_group" "jenkins" {
   filter {
     name   = "group-name"
     values = ["jenkins"]
