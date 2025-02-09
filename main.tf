@@ -1,5 +1,5 @@
 provider "aws" {
-  region = "us-east-1"  # North virginia
+  region = "us-east-1"  # North Virginia
 }
 
 terraform {
@@ -83,7 +83,7 @@ resource "aws_security_group" "terraform_sg" {
 
 # Create an EC2 Instance
 resource "aws_instance" "my_ec2" {
-  ami           = "ami-085ad6ae776d8f09c" # Update with the latest AMI ID for North virginia
+  ami           = "ami-085ad6ae776d8f09c" # Update with the latest AMI ID for North Virginia
   instance_type = "t2.large"
   subnet_id     = data.aws_subnet.default.id
   key_name      = "jenkinskey"  # Use your existing key pair
@@ -100,16 +100,10 @@ resource "aws_instance" "my_ec2" {
     Name = "MyEC2Instance"
   }
 
-  # Download the Dockerfile from GitHub
+  # Combine provisioning commands into one block
   provisioner "remote-exec" {
     inline = [
       "curl -o /home/ec2-user/Dockerfile https://raw.githubusercontent.com/REVATHIPENMETSA/Automation-CI-CD/main/dockerfile",
-    ]
-  }
-
-  # Download the install.sh script from GitHub (if applicable)
-  provisioner "remote-exec" {
-    inline = [
       "curl -o /home/ec2-user/install.sh https://raw.githubusercontent.com/REVATHIPENMETSA/Automation-CI-CD/main/install.sh",
       "sudo chmod +x /home/ec2-user/install.sh",
       "sudo /home/ec2-user/install.sh"
@@ -123,6 +117,8 @@ resource "aws_instance" "my_ec2" {
     host        = self.public_ip
   }
 }
+
+# Output the public IP address of the EC2 instance
 output "public_ip" {
   description = "The public IP address of the EC2 instance"
   value       = aws_instance.my_ec2.public_ip
