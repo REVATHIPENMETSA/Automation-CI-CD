@@ -1,10 +1,10 @@
 provider "aws" {
-  region = "us-east-1"  # Mumbai region
+  region = "us-east-1"  # North virginia
 }
 
 terraform {
   backend "s3" {
-    bucket = "sri3928031999112"   # Your S3 bucket for storing Terraform state
+    bucket = "jen123"   # Your S3 bucket for storing Terraform state
     key    = "terraform.tfstate"
     region = "us-east-1"
   }
@@ -32,7 +32,7 @@ data "aws_subnet" "default" {
 data "aws_security_group" "existing_terraform_sg" {
   filter {
     name   = "group-name"
-    values = ["srikanth0370-sg"]
+    values = ["jenkins-sg"]
   }
 
   filter {
@@ -83,10 +83,10 @@ resource "aws_security_group" "terraform_sg" {
 
 # Create an EC2 Instance
 resource "aws_instance" "my_ec2" {
-  ami           = "ami-085ad6ae776d8f09c" # Update with the latest AMI ID for Mumbai
-  instance_type = "t2.medium"
+  ami           = "ami-085ad6ae776d8f09c" # Update with the latest AMI ID for North virginia
+  instance_type = "t2.large"
   subnet_id     = data.aws_subnet.default.id
-  key_name      = "srikanth0370"  # Use your existing key pair
+  key_name      = "jenkinskey"  # Use your existing key pair
 
   vpc_security_group_ids = [
     length(data.aws_security_group.existing_terraform_sg.id) == 0 ? 
@@ -103,14 +103,14 @@ resource "aws_instance" "my_ec2" {
   # Download the Dockerfile from GitHub
   provisioner "remote-exec" {
     inline = [
-      "curl -o /home/ec2-user/Dockerfile https://raw.githubusercontent.com/srikanth9866/project_terraform/main/dockerfile",
+      "curl -o /home/ec2-user/Dockerfile https://github.com/REVATHIPENMETSA/Automation-CI-CD/blob/main/dockerfile",
     ]
   }
 
   # Download the install.sh script from GitHub (if applicable)
   provisioner "remote-exec" {
     inline = [
-      "curl -o /home/ec2-user/install.sh https://raw.githubusercontent.com/srikanth9866/project_terraform/main/install.sh",
+      "curl -o /home/ec2-user/install.sh https://github.com/REVATHIPENMETSA/Automation-CI-CD/blob/main/install.sh",
       "chmod +x /home/ec2-user/install.sh",
       "sudo /home/ec2-user/install.sh"
     ]
@@ -119,7 +119,7 @@ resource "aws_instance" "my_ec2" {
   connection {
     type        = "ssh"
     user        = "ec2-user"
-    private_key = file("/var/lib/jenkins/srikanth0370.pem")  # Path on the Jenkins server
+    private_key = file("/var/lib/jenkins/jenkinskey.pem")  # Path on the Jenkins server
     host        = self.public_ip
   }
 }
