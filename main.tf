@@ -32,7 +32,7 @@ data "aws_subnet" "default" {
 data "aws_security_group" "existing_terraform_sg" {
   filter {
     name   = "group-name"
-    values = ["jenkins-sg"]
+    values = ["jenkins"]
   }
 
   filter {
