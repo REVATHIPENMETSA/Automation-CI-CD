@@ -1,5 +1,5 @@
-provider "aws" {
-  region = "us-east-1"  # North Virginia
+[provider "aws" {
+  region = "us-east-1"  # North virginia
 }
 
 terraform {
@@ -28,11 +28,11 @@ data "aws_subnet" "default" {
   id = tolist(data.aws_subnets.default.ids)[0]
 }
 
-# Check if the "jenkins" Security Group exists
-data "aws_security_group" "jenkins" {
+# Check if the "new-sg" Security Group exists
+data "aws_security_group" "new_sg" {
   filter {
     name   = "group-name"
-    values = ["jenkins"]
+    values = ["new-sg"]
   }
 
   filter {
@@ -41,15 +41,57 @@ data "aws_security_group" "jenkins" {
   }
 }
 
+# Create Security Group only if "new-sg" SG does not exist
+resource "aws_security_group" "terraform_sg" {
+  count       = length(data.aws_security_group.new_sg.id) == 0 ? 1 : 0
+  name        = "terraform"
+  description = "Terraform-managed security group"
+  vpc_id      = data.aws_vpc.default.id
+
+  ingress {
+    from_port   = 22  # SSH
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  ingress {
+    from_port   = 80  # HTTP
+    to_port     = 80
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  ingress {
+    from_port   = 443  # HTTPS
+    to_port     = 443
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = {
+    Name = "TerraformSecurityGroup"
+  }
+}
+
 # Create an EC2 Instance
 resource "aws_instance" "my_ec2" {
-  ami           = "ami-085ad6ae776d8f09c" # Update with the latest AMI ID for North Virginia
+  ami           = "ami-085ad6ae776d8f09c" # Update with the latest AMI ID for North virginia
   instance_type = "t2.large"
   subnet_id     = data.aws_subnet.default.id
   key_name      = "jenkinskey"  # Use your existing key pair
 
   vpc_security_group_ids = [
-    data.aws_security_group.jenkins.id
+    length(data.aws_security_group.new_sg.id) == 0 ? 
+    aws_security_group.terraform_sg[0].id : 
+    data.aws_security_group.new_sg.id
   ]
 
   associate_public_ip_address = true
@@ -81,7 +123,6 @@ resource "aws_instance" "my_ec2" {
     host        = self.public_ip
   }
 }
-
 output "public_ip" {
   description = "The public IP address of the EC2 instance"
   value       = aws_instance.my_ec2.public_ip
